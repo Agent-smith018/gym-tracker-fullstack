@@ -1,0 +1,7 @@
+{
+  "name": "gym-tracker-fullstack",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm run dev --prefix backend"
+  }
+}
