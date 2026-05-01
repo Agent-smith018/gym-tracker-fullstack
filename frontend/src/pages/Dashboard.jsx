@@ -6,8 +6,17 @@ export default function Dashboard() {
     const { logout } = useContext(AuthContext);
 
     const [workouts, setWorkouts] = useState([]);
+    const [logs, setLogs] = useState([]);
+
+    const [selectedWorkout, setSelectedWorkout] = useState(null);
+
     const [title, setTitle] = useState("");
     const [notes, setNotes] = useState("");
+
+    const [exerciseName, setExerciseName] = useState("");
+    const [sets, setSets] = useState("");
+    const [reps, setReps] = useState("");
+    const [weight, setWeight] = useState("");
 
     const [error, setError] = useState("");
 
@@ -18,6 +27,16 @@ export default function Dashboard() {
             setWorkouts(res.data);
         } catch (err) {
             setError("Failed to load workouts");
+        }
+    };
+
+    // Fetch logs for workout
+    const fetchLogsByWorkout = async (workoutId) => {
+        try {
+            const res = await api.get(`/logs/workout/${workoutId}`);
+            setLogs(res.data);
+        } catch (err) {
+            setError("Failed to load logs");
         }
     };
 
@@ -45,23 +64,71 @@ export default function Dashboard() {
         try {
             await api.delete(`/workouts/${id}`);
             fetchWorkouts();
+
+            if (selectedWorkout?._id === id) {
+                setSelectedWorkout(null);
+                setLogs([]);
+            }
         } catch (err) {
             setError("Failed to delete workout");
+        }
+    };
+
+    // Select workout
+    const handleSelectWorkout = (workout) => {
+        setSelectedWorkout(workout);
+        fetchLogsByWorkout(workout._id);
+    };
+
+    // Create log
+    const handleCreateLog = async (e) => {
+        e.preventDefault();
+        setError("");
+
+        if (!selectedWorkout) {
+            return setError("Please select a workout first");
+        }
+
+        try {
+            await api.post("/logs", {
+                workout: selectedWorkout._id,
+                exerciseName,
+                sets: Number(sets),
+                reps: Number(reps),
+                weight: Number(weight),
+            });
+
+            setExerciseName("");
+            setSets("");
+            setReps("");
+            setWeight("");
+
+            fetchLogsByWorkout(selectedWorkout._id);
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to create log");
+        }
+    };
+
+    // Delete log
+    const handleDeleteLog = async (logId) => {
+        try {
+            await api.delete(`/logs/${logId}`);
+            fetchLogsByWorkout(selectedWorkout._id);
+        } catch (err) {
+            setError("Failed to delete log");
         }
     };
 
     return (
         <div style={{ padding: "40px" }}>
             <h1>Gym Tracker Dashboard</h1>
-
             <button onClick={logout}>Logout</button>
 
             <hr />
 
-            <h2>Create Workout</h2>
-
             {error && <p style={{ color: "red" }}>{error}</p>}
 
+            <h2>Create Workout</h2>
             <form onSubmit={handleCreateWorkout}>
                 <input
                     type="text"
@@ -85,21 +152,95 @@ export default function Dashboard() {
             <hr />
 
             <h2>Your Workouts</h2>
-
             {workouts.length === 0 ? (
                 <p>No workouts yet.</p>
             ) : (
                 <ul>
                     {workouts.map((workout) => (
-                        <li key={workout._id} style={{ marginBottom: "10px" }}>
+                        <li key={workout._id} style={{ marginBottom: "15px" }}>
                             <b>{workout.title}</b> - {workout.notes}
                             <br />
-                            <button onClick={() => handleDeleteWorkout(workout._id)}>
-                                Delete
+
+                            <button onClick={() => handleSelectWorkout(workout)}>
+                                View Logs
+                            </button>
+
+                            <button
+                                style={{ marginLeft: "10px" }}
+                                onClick={() => handleDeleteWorkout(workout._id)}
+                            >
+                                Delete Workout
                             </button>
                         </li>
                     ))}
                 </ul>
+            )}
+
+            <hr />
+
+            <h2>Exercise Logs</h2>
+
+            {!selectedWorkout ? (
+                <p>Select a workout to view logs.</p>
+            ) : (
+                <>
+                    <h3>Workout: {selectedWorkout.title}</h3>
+
+                    <form onSubmit={handleCreateLog}>
+                        <input
+                            type="text"
+                            placeholder="Exercise Name"
+                            value={exerciseName}
+                            onChange={(e) => setExerciseName(e.target.value)}
+                        />
+                        <br /><br />
+
+                        <input
+                            type="number"
+                            placeholder="Sets"
+                            value={sets}
+                            onChange={(e) => setSets(e.target.value)}
+                        />
+                        <br /><br />
+
+                        <input
+                            type="number"
+                            placeholder="Reps"
+                            value={reps}
+                            onChange={(e) => setReps(e.target.value)}
+                        />
+                        <br /><br />
+
+                        <input
+                            type="number"
+                            placeholder="Weight"
+                            value={weight}
+                            onChange={(e) => setWeight(e.target.value)}
+                        />
+                        <br /><br />
+
+                        <button type="submit">Add Log</button>
+                    </form>
+
+                    <h3>Logs List</h3>
+
+                    {logs.length === 0 ? (
+                        <p>No logs found for this workout.</p>
+                    ) : (
+                        <ul>
+                            {logs.map((log) => (
+                                <li key={log._id} style={{ marginBottom: "10px" }}>
+                                    <b>{log.exerciseName}</b> - {log.sets} sets x {log.reps} reps
+                                    (Weight: {log.weight}kg)
+                                    <br />
+                                    <button onClick={() => handleDeleteLog(log._id)}>
+                                        Delete Log
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </>
             )}
         </div>
     );
