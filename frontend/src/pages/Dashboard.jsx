@@ -46,9 +46,21 @@ export default function Dashboard() {
     const [minWeight, setMinWeight] = useState("");
     const [minReps, setMinReps] = useState("");
 
+    // Sorting
+    const [workoutSort, setWorkoutSort] = useState("newest");
+    const [logSort, setLogSort] = useState("newest");
+
+    // Pagination
+    const [workoutPage, setWorkoutPage] = useState(1);
+    const [logPage, setLogPage] = useState(1);
+
+    const workoutsPerPage = 5;
+    const logsPerPage = 5;
+
     // Modal states
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showLogModal, setShowLogModal] = useState(false);
+
     const [workoutToDelete, setWorkoutToDelete] = useState(null);
     const [logToDelete, setLogToDelete] = useState(null);
 
@@ -142,6 +154,7 @@ export default function Dashboard() {
     // Select workout
     const handleSelectWorkout = (workout) => {
         setSelectedWorkout(workout);
+        setLogPage(1);
         fetchLogsByWorkout(workout._id);
     };
 
@@ -243,13 +256,29 @@ export default function Dashboard() {
         reps: Number(log.reps),
     }));
 
-    // Filter workouts
-    const filteredWorkouts = workouts.filter((w) =>
+    // Filter + Sort Workouts
+    let filteredWorkouts = workouts.filter((w) =>
         w.title.toLowerCase().includes(workoutSearch.toLowerCase())
     );
 
-    // Filter logs
-    const filteredLogs = logs.filter((log) => {
+    if (workoutSort === "newest") {
+        filteredWorkouts.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+    }
+
+    if (workoutSort === "oldest") {
+        filteredWorkouts.sort(
+            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+    }
+
+    if (workoutSort === "az") {
+        filteredWorkouts.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    // Filter + Sort Logs
+    let filteredLogs = logs.filter((log) => {
         const matchName = log.exerciseName
             .toLowerCase()
             .includes(logSearch.toLowerCase());
@@ -261,6 +290,36 @@ export default function Dashboard() {
 
         return matchName && matchWeight && matchReps;
     });
+
+    if (logSort === "newest") {
+        filteredLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    if (logSort === "oldest") {
+        filteredLogs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+
+    if (logSort === "weightHigh") {
+        filteredLogs.sort((a, b) => Number(b.weight) - Number(a.weight));
+    }
+
+    if (logSort === "weightLow") {
+        filteredLogs.sort((a, b) => Number(a.weight) - Number(b.weight));
+    }
+
+    // Pagination logic
+    const totalWorkoutPages = Math.ceil(filteredWorkouts.length / workoutsPerPage);
+    const totalLogPages = Math.ceil(filteredLogs.length / logsPerPage);
+
+    const paginatedWorkouts = filteredWorkouts.slice(
+        (workoutPage - 1) * workoutsPerPage,
+        workoutPage * workoutsPerPage
+    );
+
+    const paginatedLogs = filteredLogs.slice(
+        (logPage - 1) * logsPerPage,
+        logPage * logsPerPage
+    );
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -342,14 +401,29 @@ export default function Dashboard() {
                     <div className="bg-white rounded-2xl shadow-md p-6">
                         <h2 className="text-xl font-bold mb-4">📌 Workouts</h2>
 
-                        {/* Search workout */}
                         <input
                             type="text"
                             placeholder="Search workout..."
                             value={workoutSearch}
-                            onChange={(e) => setWorkoutSearch(e.target.value)}
-                            className="w-full border rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                            onChange={(e) => {
+                                setWorkoutSearch(e.target.value);
+                                setWorkoutPage(1);
+                            }}
+                            className="w-full border rounded-lg px-4 py-2 mb-4"
                         />
+
+                        <select
+                            value={workoutSort}
+                            onChange={(e) => {
+                                setWorkoutSort(e.target.value);
+                                setWorkoutPage(1);
+                            }}
+                            className="w-full border rounded-lg px-4 py-2 mb-4"
+                        >
+                            <option value="newest">Sort: Newest</option>
+                            <option value="oldest">Sort: Oldest</option>
+                            <option value="az">Sort: A-Z</option>
+                        </select>
 
                         <form onSubmit={handleCreateWorkout} className="space-y-3 mb-6">
                             <input
@@ -357,7 +431,7 @@ export default function Dashboard() {
                                 placeholder="Workout Title"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                                className="w-full border rounded-lg px-4 py-2"
                             />
 
                             <input
@@ -365,14 +439,14 @@ export default function Dashboard() {
                                 placeholder="Notes"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                                className="w-full border rounded-lg px-4 py-2"
                             />
 
                             <button
                                 disabled={creatingWorkout}
-                                className={`w-full py-2 rounded-lg font-semibold transition ${creatingWorkout
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-gray-900 hover:bg-gray-800 text-white"
+                                className={`w-full py-2 rounded-lg font-semibold ${creatingWorkout
+                                        ? "bg-gray-400 cursor-not-allowed"
+                                        : "bg-gray-900 hover:bg-gray-800 text-white"
                                     }`}
                             >
                                 {creatingWorkout ? "Adding..." : "Add Workout"}
@@ -381,16 +455,16 @@ export default function Dashboard() {
 
                         {loadingWorkouts ? (
                             <p className="text-gray-500">Loading workouts...</p>
-                        ) : filteredWorkouts.length === 0 ? (
+                        ) : paginatedWorkouts.length === 0 ? (
                             <p className="text-gray-500">No workouts found.</p>
                         ) : (
                             <div className="space-y-3">
-                                {filteredWorkouts.map((workout) => (
+                                {paginatedWorkouts.map((workout) => (
                                     <div
                                         key={workout._id}
-                                        className={`p-4 border rounded-xl transition ${selectedWorkout?._id === workout._id
-                                            ? "border-gray-900 bg-gray-50"
-                                            : "hover:bg-gray-50"
+                                        className={`p-4 border rounded-xl ${selectedWorkout?._id === workout._id
+                                                ? "border-gray-900 bg-gray-50"
+                                                : "hover:bg-gray-50"
                                             }`}
                                     >
                                         <div className="flex justify-between items-center">
@@ -409,12 +483,36 @@ export default function Dashboard() {
 
                                         <button
                                             onClick={() => handleSelectWorkout(workout)}
-                                            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold transition"
+                                            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold"
                                         >
                                             View Logs
                                         </button>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+
+                        {totalWorkoutPages > 1 && (
+                            <div className="flex justify-between items-center mt-4">
+                                <button
+                                    disabled={workoutPage === 1}
+                                    onClick={() => setWorkoutPage((p) => p - 1)}
+                                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                >
+                                    Prev
+                                </button>
+
+                                <p className="text-gray-600 font-semibold">
+                                    Page {workoutPage} of {totalWorkoutPages}
+                                </p>
+
+                                <button
+                                    disabled={workoutPage === totalWorkoutPages}
+                                    onClick={() => setWorkoutPage((p) => p + 1)}
+                                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
                             </div>
                         )}
                     </div>
@@ -434,14 +532,16 @@ export default function Dashboard() {
                                     <span className="text-blue-600">{selectedWorkout.title}</span>
                                 </h3>
 
-                                {/* Search + Filter logs */}
                                 <div className="space-y-3 mb-5">
                                     <input
                                         type="text"
                                         placeholder="Search exercise..."
                                         value={logSearch}
-                                        onChange={(e) => setLogSearch(e.target.value)}
-                                        className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onChange={(e) => {
+                                            setLogSearch(e.target.value);
+                                            setLogPage(1);
+                                        }}
+                                        className="w-full border rounded-lg px-4 py-2"
                                     />
 
                                     <div className="grid grid-cols-2 gap-3">
@@ -449,19 +549,39 @@ export default function Dashboard() {
                                             type="number"
                                             placeholder="Min Weight"
                                             value={minWeight}
-                                            onChange={(e) => setMinWeight(e.target.value)}
-                                            className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            onChange={(e) => {
+                                                setMinWeight(e.target.value);
+                                                setLogPage(1);
+                                            }}
+                                            className="border rounded-lg px-4 py-2"
                                         />
 
                                         <input
                                             type="number"
                                             placeholder="Min Reps"
                                             value={minReps}
-                                            onChange={(e) => setMinReps(e.target.value)}
-                                            className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            onChange={(e) => {
+                                                setMinReps(e.target.value);
+                                                setLogPage(1);
+                                            }}
+                                            className="border rounded-lg px-4 py-2"
                                         />
                                     </div>
                                 </div>
+
+                                <select
+                                    value={logSort}
+                                    onChange={(e) => {
+                                        setLogSort(e.target.value);
+                                        setLogPage(1);
+                                    }}
+                                    className="w-full border rounded-lg px-4 py-2 mb-4"
+                                >
+                                    <option value="newest">Sort: Newest</option>
+                                    <option value="oldest">Sort: Oldest</option>
+                                    <option value="weightHigh">Sort: Weight High</option>
+                                    <option value="weightLow">Sort: Weight Low</option>
+                                </select>
 
                                 <form onSubmit={handleCreateLog} className="space-y-3 mb-6">
                                     <input
@@ -469,7 +589,7 @@ export default function Dashboard() {
                                         placeholder="Exercise Name"
                                         value={exerciseName}
                                         onChange={(e) => setExerciseName(e.target.value)}
-                                        className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full border rounded-lg px-4 py-2"
                                     />
 
                                     <div className="grid grid-cols-3 gap-2">
@@ -478,29 +598,29 @@ export default function Dashboard() {
                                             placeholder="Sets"
                                             value={sets}
                                             onChange={(e) => setSets(e.target.value)}
-                                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="border rounded-lg px-3 py-2"
                                         />
                                         <input
                                             type="number"
                                             placeholder="Reps"
                                             value={reps}
                                             onChange={(e) => setReps(e.target.value)}
-                                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="border rounded-lg px-3 py-2"
                                         />
                                         <input
                                             type="number"
                                             placeholder="Weight"
                                             value={weight}
                                             onChange={(e) => setWeight(e.target.value)}
-                                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="border rounded-lg px-3 py-2"
                                         />
                                     </div>
 
                                     <button
                                         disabled={creatingLog}
-                                        className={`w-full py-2 rounded-lg font-semibold transition ${creatingLog
-                                            ? "bg-gray-400 cursor-not-allowed"
-                                            : "bg-blue-600 hover:bg-blue-700 text-white"
+                                        className={`w-full py-2 rounded-lg font-semibold ${creatingLog
+                                                ? "bg-gray-400 cursor-not-allowed"
+                                                : "bg-blue-600 hover:bg-blue-700 text-white"
                                             }`}
                                     >
                                         {creatingLog ? "Adding..." : "Add Log"}
@@ -509,14 +629,14 @@ export default function Dashboard() {
 
                                 {loadingLogs ? (
                                     <p className="text-gray-500">Loading logs...</p>
-                                ) : filteredLogs.length === 0 ? (
+                                ) : paginatedLogs.length === 0 ? (
                                     <p className="text-gray-500">No logs found.</p>
                                 ) : (
                                     <div className="space-y-3">
-                                        {filteredLogs.map((log) => (
+                                        {paginatedLogs.map((log) => (
                                             <div
                                                 key={log._id}
-                                                className="p-4 border rounded-xl flex justify-between items-center hover:bg-gray-50 transition"
+                                                className="p-4 border rounded-xl flex justify-between items-center hover:bg-gray-50"
                                             >
                                                 <div>
                                                     <h4 className="font-bold">{log.exerciseName}</h4>
@@ -534,6 +654,30 @@ export default function Dashboard() {
                                                 </button>
                                             </div>
                                         ))}
+                                    </div>
+                                )}
+
+                                {totalLogPages > 1 && (
+                                    <div className="flex justify-between items-center mt-4">
+                                        <button
+                                            disabled={logPage === 1}
+                                            onClick={() => setLogPage((p) => p - 1)}
+                                            className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                        >
+                                            Prev
+                                        </button>
+
+                                        <p className="text-gray-600 font-semibold">
+                                            Page {logPage} of {totalLogPages}
+                                        </p>
+
+                                        <button
+                                            disabled={logPage === totalLogPages}
+                                            onClick={() => setLogPage((p) => p + 1)}
+                                            className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
                                     </div>
                                 )}
                             </>
