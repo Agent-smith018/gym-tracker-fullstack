@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import api from "../api/api";
 import { AuthContext } from "../context/AuthContext";
+import socket from "../api/socket";
 
 export default function Dashboard() {
     const { logout } = useContext(AuthContext);
@@ -19,6 +20,7 @@ export default function Dashboard() {
     const [weight, setWeight] = useState("");
 
     const [error, setError] = useState("");
+    const [notification, setNotification] = useState("");
 
     // Fetch workouts
     const fetchWorkouts = async () => {
@@ -30,7 +32,7 @@ export default function Dashboard() {
         }
     };
 
-    // Fetch logs for workout
+    // Fetch logs by workout
     const fetchLogsByWorkout = async (workoutId) => {
         try {
             const res = await api.get(`/logs/workout/${workoutId}`);
@@ -40,9 +42,35 @@ export default function Dashboard() {
         }
     };
 
+    // Load workouts on page load
     useEffect(() => {
         fetchWorkouts();
     }, []);
+
+    // Socket.io real-time listeners
+    useEffect(() => {
+        socket.on("workout:created", (workout) => {
+            setNotification(`New workout added: ${workout.title}`);
+            fetchWorkouts();
+
+            setTimeout(() => setNotification(""), 3000);
+        });
+
+        socket.on("log:added", (log) => {
+            setNotification(`New log added: ${log.exerciseName}`);
+
+            if (selectedWorkout && log.workout === selectedWorkout._id) {
+                fetchLogsByWorkout(selectedWorkout._id);
+            }
+
+            setTimeout(() => setNotification(""), 3000);
+        });
+
+        return () => {
+            socket.off("workout:created");
+            socket.off("log:added");
+        };
+    }, [selectedWorkout]);
 
     // Create workout
     const handleCreateWorkout = async (e) => {
@@ -80,7 +108,7 @@ export default function Dashboard() {
         fetchLogsByWorkout(workout._id);
     };
 
-    // Create log
+    // Create exercise log
     const handleCreateLog = async (e) => {
         e.preventDefault();
         setError("");
@@ -126,6 +154,14 @@ export default function Dashboard() {
 
             <hr />
 
+            {/* Notification */}
+            {notification && (
+                <p style={{ background: "lightgreen", padding: "10px" }}>
+                    {notification}
+                </p>
+            )}
+
+            {/* Error */}
             {error && <p style={{ color: "red" }}>{error}</p>}
 
             <h2>Create Workout</h2>
@@ -136,7 +172,8 @@ export default function Dashboard() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
-                <br /><br />
+                <br />
+                <br />
 
                 <input
                     type="text"
@@ -144,7 +181,8 @@ export default function Dashboard() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                 />
-                <br /><br />
+                <br />
+                <br />
 
                 <button type="submit">Add Workout</button>
             </form>
@@ -193,7 +231,8 @@ export default function Dashboard() {
                             value={exerciseName}
                             onChange={(e) => setExerciseName(e.target.value)}
                         />
-                        <br /><br />
+                        <br />
+                        <br />
 
                         <input
                             type="number"
@@ -201,7 +240,8 @@ export default function Dashboard() {
                             value={sets}
                             onChange={(e) => setSets(e.target.value)}
                         />
-                        <br /><br />
+                        <br />
+                        <br />
 
                         <input
                             type="number"
@@ -209,7 +249,8 @@ export default function Dashboard() {
                             value={reps}
                             onChange={(e) => setReps(e.target.value)}
                         />
-                        <br /><br />
+                        <br />
+                        <br />
 
                         <input
                             type="number"
@@ -217,7 +258,8 @@ export default function Dashboard() {
                             value={weight}
                             onChange={(e) => setWeight(e.target.value)}
                         />
-                        <br /><br />
+                        <br />
+                        <br />
 
                         <button type="submit">Add Log</button>
                     </form>
