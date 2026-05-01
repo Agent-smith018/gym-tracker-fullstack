@@ -3,6 +3,7 @@ import api from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 import socket from "../api/socket";
 import Navbar from "../components/Navbar";
+import ConfirmModal from "../components/ConfirmModal";
 
 import {
     BarChart,
@@ -38,6 +39,18 @@ export default function Dashboard() {
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [creatingWorkout, setCreatingWorkout] = useState(false);
     const [creatingLog, setCreatingLog] = useState(false);
+
+    // Search + Filters
+    const [workoutSearch, setWorkoutSearch] = useState("");
+    const [logSearch, setLogSearch] = useState("");
+    const [minWeight, setMinWeight] = useState("");
+    const [minReps, setMinReps] = useState("");
+
+    // Modal states
+    const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+    const [showLogModal, setShowLogModal] = useState(false);
+    const [workoutToDelete, setWorkoutToDelete] = useState(null);
+    const [logToDelete, setLogToDelete] = useState(null);
 
     // Fetch current user
     const fetchMe = async () => {
@@ -126,27 +139,6 @@ export default function Dashboard() {
         }
     };
 
-    // Delete workout
-    const handleDeleteWorkout = async (id) => {
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this workout?"
-        );
-
-        if (!confirmDelete) return;
-
-        try {
-            await api.delete(`/workouts/${id}`);
-            fetchWorkouts();
-
-            if (selectedWorkout?._id === id) {
-                setSelectedWorkout(null);
-                setLogs([]);
-            }
-        } catch (err) {
-            setError("Failed to delete workout");
-        }
-    };
-
     // Select workout
     const handleSelectWorkout = (workout) => {
         setSelectedWorkout(workout);
@@ -190,19 +182,46 @@ export default function Dashboard() {
         }
     };
 
-    // Delete log
-    const handleDeleteLog = async (logId) => {
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this log?"
-        );
+    // Ask delete workout
+    const askDeleteWorkout = (id) => {
+        setWorkoutToDelete(id);
+        setShowWorkoutModal(true);
+    };
 
-        if (!confirmDelete) return;
-
+    // Confirm delete workout
+    const confirmDeleteWorkout = async () => {
         try {
-            await api.delete(`/logs/${logId}`);
+            await api.delete(`/workouts/${workoutToDelete}`);
+            fetchWorkouts();
+
+            if (selectedWorkout?._id === workoutToDelete) {
+                setSelectedWorkout(null);
+                setLogs([]);
+            }
+        } catch (err) {
+            setError("Failed to delete workout");
+        } finally {
+            setShowWorkoutModal(false);
+            setWorkoutToDelete(null);
+        }
+    };
+
+    // Ask delete log
+    const askDeleteLog = (logId) => {
+        setLogToDelete(logId);
+        setShowLogModal(true);
+    };
+
+    // Confirm delete log
+    const confirmDeleteLog = async () => {
+        try {
+            await api.delete(`/logs/${logToDelete}`);
             fetchLogsByWorkout(selectedWorkout._id);
         } catch (err) {
             setError("Failed to delete log");
+        } finally {
+            setShowLogModal(false);
+            setLogToDelete(null);
         }
     };
 
@@ -217,18 +236,37 @@ export default function Dashboard() {
         return sum + logWeight * logReps * logSets;
     }, 0);
 
-    // Chart data (simple)
+    // Chart data
     const chartData = logs.map((log) => ({
         name: log.exerciseName,
         weight: Number(log.weight),
         reps: Number(log.reps),
     }));
 
+    // Filter workouts
+    const filteredWorkouts = workouts.filter((w) =>
+        w.title.toLowerCase().includes(workoutSearch.toLowerCase())
+    );
+
+    // Filter logs
+    const filteredLogs = logs.filter((log) => {
+        const matchName = log.exerciseName
+            .toLowerCase()
+            .includes(logSearch.toLowerCase());
+
+        const matchWeight =
+            minWeight === "" || Number(log.weight) >= Number(minWeight);
+
+        const matchReps = minReps === "" || Number(log.reps) >= Number(minReps);
+
+        return matchName && matchWeight && matchReps;
+    });
+
     return (
         <div className="min-h-screen bg-gray-100">
             <Navbar onLogout={logout} />
 
-            {/* Notification Toast */}
+            {/* Notification */}
             {notification && (
                 <div className="fixed top-5 right-5 bg-green-500 text-white px-5 py-3 rounded-xl shadow-lg font-semibold z-50">
                     {notification}
@@ -243,7 +281,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {/* Profile Section */}
+                {/* Profile */}
                 <div className="bg-white rounded-2xl shadow-md p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">
@@ -257,7 +295,7 @@ export default function Dashboard() {
                     </p>
                 </div>
 
-                {/* Stats Cards */}
+                {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white rounded-2xl shadow-md p-5">
                         <p className="text-gray-500 text-sm">Total Workouts</p>
@@ -275,7 +313,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Chart Section */}
+                {/* Chart */}
                 <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
                     <h2 className="text-xl font-bold mb-4">📈 Workout Progress Chart</h2>
 
@@ -298,11 +336,20 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Main Grid */}
+                {/* Main grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* LEFT: Workouts */}
+                    {/* Workouts */}
                     <div className="bg-white rounded-2xl shadow-md p-6">
                         <h2 className="text-xl font-bold mb-4">📌 Workouts</h2>
+
+                        {/* Search workout */}
+                        <input
+                            type="text"
+                            placeholder="Search workout..."
+                            value={workoutSearch}
+                            onChange={(e) => setWorkoutSearch(e.target.value)}
+                            className="w-full border rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-800"
+                        />
 
                         <form onSubmit={handleCreateWorkout} className="space-y-3 mb-6">
                             <input
@@ -324,8 +371,8 @@ export default function Dashboard() {
                             <button
                                 disabled={creatingWorkout}
                                 className={`w-full py-2 rounded-lg font-semibold transition ${creatingWorkout
-                                        ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gray-900 hover:bg-gray-800 text-white"
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-gray-900 hover:bg-gray-800 text-white"
                                     }`}
                             >
                                 {creatingWorkout ? "Adding..." : "Add Workout"}
@@ -334,16 +381,16 @@ export default function Dashboard() {
 
                         {loadingWorkouts ? (
                             <p className="text-gray-500">Loading workouts...</p>
-                        ) : workouts.length === 0 ? (
-                            <p className="text-gray-500">No workouts yet.</p>
+                        ) : filteredWorkouts.length === 0 ? (
+                            <p className="text-gray-500">No workouts found.</p>
                         ) : (
                             <div className="space-y-3">
-                                {workouts.map((workout) => (
+                                {filteredWorkouts.map((workout) => (
                                     <div
                                         key={workout._id}
                                         className={`p-4 border rounded-xl transition ${selectedWorkout?._id === workout._id
-                                                ? "border-gray-900 bg-gray-50"
-                                                : "hover:bg-gray-50"
+                                            ? "border-gray-900 bg-gray-50"
+                                            : "hover:bg-gray-50"
                                             }`}
                                     >
                                         <div className="flex justify-between items-center">
@@ -353,7 +400,7 @@ export default function Dashboard() {
                                             </div>
 
                                             <button
-                                                onClick={() => handleDeleteWorkout(workout._id)}
+                                                onClick={() => askDeleteWorkout(workout._id)}
                                                 className="text-red-500 hover:text-red-700 font-semibold text-sm"
                                             >
                                                 Delete
@@ -372,7 +419,7 @@ export default function Dashboard() {
                         )}
                     </div>
 
-                    {/* RIGHT: Logs */}
+                    {/* Logs */}
                     <div className="bg-white rounded-2xl shadow-md p-6">
                         <h2 className="text-xl font-bold mb-4">📊 Exercise Logs</h2>
 
@@ -386,6 +433,35 @@ export default function Dashboard() {
                                     Workout:{" "}
                                     <span className="text-blue-600">{selectedWorkout.title}</span>
                                 </h3>
+
+                                {/* Search + Filter logs */}
+                                <div className="space-y-3 mb-5">
+                                    <input
+                                        type="text"
+                                        placeholder="Search exercise..."
+                                        value={logSearch}
+                                        onChange={(e) => setLogSearch(e.target.value)}
+                                        className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <input
+                                            type="number"
+                                            placeholder="Min Weight"
+                                            value={minWeight}
+                                            onChange={(e) => setMinWeight(e.target.value)}
+                                            className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+
+                                        <input
+                                            type="number"
+                                            placeholder="Min Reps"
+                                            value={minReps}
+                                            onChange={(e) => setMinReps(e.target.value)}
+                                            className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
 
                                 <form onSubmit={handleCreateLog} className="space-y-3 mb-6">
                                     <input
@@ -423,8 +499,8 @@ export default function Dashboard() {
                                     <button
                                         disabled={creatingLog}
                                         className={`w-full py-2 rounded-lg font-semibold transition ${creatingLog
-                                                ? "bg-gray-400 cursor-not-allowed"
-                                                : "bg-blue-600 hover:bg-blue-700 text-white"
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-blue-600 hover:bg-blue-700 text-white"
                                             }`}
                                     >
                                         {creatingLog ? "Adding..." : "Add Log"}
@@ -433,11 +509,11 @@ export default function Dashboard() {
 
                                 {loadingLogs ? (
                                     <p className="text-gray-500">Loading logs...</p>
-                                ) : logs.length === 0 ? (
+                                ) : filteredLogs.length === 0 ? (
                                     <p className="text-gray-500">No logs found.</p>
                                 ) : (
                                     <div className="space-y-3">
-                                        {logs.map((log) => (
+                                        {filteredLogs.map((log) => (
                                             <div
                                                 key={log._id}
                                                 className="p-4 border rounded-xl flex justify-between items-center hover:bg-gray-50 transition"
@@ -451,7 +527,7 @@ export default function Dashboard() {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => handleDeleteLog(log._id)}
+                                                    onClick={() => askDeleteLog(log._id)}
                                                     className="text-red-500 hover:text-red-700 font-semibold text-sm"
                                                 >
                                                     Delete
@@ -464,6 +540,23 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
+
+                {/* MODALS */}
+                <ConfirmModal
+                    isOpen={showWorkoutModal}
+                    title="Delete Workout"
+                    message="Are you sure you want to delete this workout? This action cannot be undone."
+                    onCancel={() => setShowWorkoutModal(false)}
+                    onConfirm={confirmDeleteWorkout}
+                />
+
+                <ConfirmModal
+                    isOpen={showLogModal}
+                    title="Delete Exercise Log"
+                    message="Are you sure you want to delete this exercise log?"
+                    onCancel={() => setShowLogModal(false)}
+                    onConfirm={confirmDeleteLog}
+                />
             </div>
         </div>
     );
