@@ -9,6 +9,7 @@ export default function Signup() {
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
@@ -16,6 +17,7 @@ export default function Signup() {
         e.preventDefault();
         setError("");
         setSuccess("");
+        setIsLoading(true);
 
         try {
             const res = await api.post("/auth/signup", { name, email, password });
@@ -26,81 +28,126 @@ export default function Signup() {
             }, 1200);
         } catch (err) {
             setError(err.response?.data?.message || "Signup failed");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-                <h1 className="text-3xl font-bold text-gray-900 text-center">
-                    🏋️ Gym Tracker
-                </h1>
-                <p className="text-gray-500 text-center mt-2">
-                    Create an account to start tracking
-                </p>
+        <div className="auth-bg">
+            <div className="auth-card">
+                <div className="text-center mb-10">
+                    <h1 className="auth-title">
+                        Join Gym Tracker
+                    </h1>
+                    <p className="auth-subtitle">
+                        Create an account to start tracking your progress.
+                    </p>
+                </div>
 
                 {error && (
-                    <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg mt-4">
+                    <div className="auth-error">
+                        <span className="text-lg">⚠️</span>
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div className="bg-green-100 text-green-700 px-4 py-3 rounded-lg mt-4">
-                        {success}
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
+                        <span className="text-lg">✅</span>
+                        {success} Redirecting...
                     </div>
                 )}
 
-                <form onSubmit={handleSignup} className="space-y-4 mt-6">
+                <form onSubmit={handleSignup} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        <label className="auth-label">
                             Full Name
                         </label>
                         <input
                             type="text"
-                            placeholder="Your Name"
+                            placeholder="John Doe"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            className="auth-input"
+                            required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Email
+                        <label className="auth-label">
+                            Email Address
                         </label>
                         <input
                             type="email"
-                            placeholder="example@gmail.com"
+                            placeholder="name@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            className="auth-input"
+                            required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        <label className="auth-label">
                             Password
                         </label>
                         <input
                             type="password"
-                            placeholder="Create password"
+                            placeholder="Create a strong password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            className="auth-input"
+                            required
                         />
                     </div>
 
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition">
-                        Signup
+                    <button
+                        disabled={isLoading || success}
+                        className={(isLoading || success) ? "auth-btn auth-btn-disabled mt-6" : "auth-btn mt-6"}
+                    >
+                        {isLoading ? (
+                            <>
+                                <svg
+                                    className="animate-spin mr-3 h-5 w-5 text-white"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                </svg>
+                                Signing up...
+                            </>
+                        ) : (
+                            "Sign Up"
+                        )}
                     </button>
                 </form>
 
-                <p className="text-center text-gray-600 mt-6">
-                    Already have an account?{" "}
-                    <Link to="/login" className="text-blue-600 font-semibold">
-                        Login
-                    </Link>
+                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+                    <p className="text-slate-600">
+                        Already have an account?{" "}
+                        <Link to="/login" className="text-slate-900 font-bold hover:underline">
+                            Sign In
+                        </Link>
+                    </p>
+                </div>
+
+                {/* Footer */}
+                <p className="text-center text-xs text-slate-400 mt-8">
+                    © {new Date().getFullYear()} Gym Tracker. All rights reserved.
                 </p>
             </div>
         </div>

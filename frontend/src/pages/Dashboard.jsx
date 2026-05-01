@@ -322,73 +322,99 @@ export default function Dashboard() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-slate-50">
             <Navbar onLogout={logout} />
 
             {/* Notification */}
             {notification && (
-                <div className="fixed top-5 right-5 bg-green-500 text-white px-5 py-3 rounded-xl shadow-lg font-semibold z-50">
+                <div className="fixed top-24 right-5 bg-slate-600 text-white px-6 py-4 rounded-2xl shadow-xl shadow-slate-500/20 font-medium z-50 flex items-center gap-3 border border-slate-500">
+                    
                     {notification}
                 </div>
             )}
 
-            <div className="max-w-6xl mx-auto p-6">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 {/* Error */}
                 {error && (
-                    <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <div className="bg-red-50 text-red-600 border border-red-200 px-5 py-4 rounded-2xl mb-6 text-sm flex items-center shadow-sm">
+                        
                         {error}
                     </div>
                 )}
 
                 {/* Profile */}
-                <div className="bg-white rounded-2xl shadow-md p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            Welcome {user?.name || "User"} 👋
+                <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-8 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center relative overflow-hidden group">
+
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-bold text-slate-900 mb-1">
+                            Welcome back, {user?.name || "User"}
                         </h2>
-                        <p className="text-gray-500">{user?.email}</p>
+                        <p className="text-slate-500 font-medium">{user?.email}</p>
                     </div>
 
-                    <p className="text-sm text-gray-500 mt-3 md:mt-0">
-                        Track your workouts and improve your fitness 💪
-                    </p>
+                    <div className="relative z-10 mt-4 md:mt-0 bg-white/60 px-5 py-2.5 rounded-full border border-slate-200 shadow-sm">
+                        <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            Ready to crush your goals
+                        </p>
+                    </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white rounded-2xl shadow-md p-5">
-                        <p className="text-gray-500 text-sm">Total Workouts</p>
-                        <h3 className="text-2xl font-bold">{totalWorkouts}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-6 hover:-translate-y-1 transition-transform duration-300">
+                        <div className="flex items-center gap-4">
+
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Total Workouts</p>
+                                <h3 className="text-3xl font-bold text-slate-900">{totalWorkouts}</h3>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-md p-5">
-                        <p className="text-gray-500 text-sm">Total Logs</p>
-                        <h3 className="text-2xl font-bold">{totalLogs}</h3>
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-6 hover:-translate-y-1 transition-transform duration-300 delay-100">
+                        <div className="flex items-center gap-4">
+
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Total Exercises Logged</p>
+
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-md p-5">
-                        <p className="text-gray-500 text-sm">Total Weight Lifted</p>
-                        <h3 className="text-2xl font-bold">{totalWeightLifted} kg</h3>
+                    <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-6 hover:-translate-y-1 transition-transform duration-300 delay-200">
+                        <div className="flex items-center gap-4">
+
+                            <div>
+                                <p className="text-slate-500 text-sm font-medium">Total Volume</p>
+                                <h3 className="text-3xl font-bold text-slate-900">{totalWeightLifted} <span className="text-lg text-slate-500">kg</span></h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Chart */}
-                <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-                    <h2 className="text-xl font-bold mb-4">📈 Workout Progress Chart</h2>
+                <div className="bg-white border border-slate-200 shadow-xl rounded-3xl p-6 lg:p-8 mb-8">
+                    <div className="flex items-center gap-3 mb-6">
+<h2 className="text-2xl font-bold text-slate-900">Progress Overview</h2>
+                    </div>
 
                     {logs.length === 0 ? (
-                        <p className="text-gray-500">
-                            No logs available to generate chart.
-                        </p>
+                        <div className="h-72 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+<p className="font-medium">Start logging exercises to see your progress chart.</p>
+                        </div>
                     ) : (
-                        <div className="w-full h-72">
+                        <div className="w-full h-80">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="weight" />
+                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                    <Tooltip
+                                        cursor={{ fill: '#f1f5f9' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', padding: '12px' }}
+                                    />
+                                    <Bar dataKey="weight" fill="#0f172a" radius={[4, 4, 0, 0]} maxBarSize={50} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -396,120 +422,138 @@ export default function Dashboard() {
                 </div>
 
                 {/* Main grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Workouts */}
-                    <div className="bg-white rounded-2xl shadow-md p-6">
-                        <h2 className="text-xl font-bold mb-4">📌 Workouts</h2>
+                    <div className="lg:col-span-5 bg-white border border-slate-200 shadow-xl rounded-3xl p-6 lg:p-8">
+                        <div className="flex items-center gap-3 mb-6">
+<h2 className="text-2xl font-bold text-slate-900">Workouts</h2>
+                        </div>
 
-                        <input
-                            type="text"
-                            placeholder="Search workout..."
-                            value={workoutSearch}
-                            onChange={(e) => {
-                                setWorkoutSearch(e.target.value);
-                                setWorkoutPage(1);
-                            }}
-                            className="w-full border rounded-lg px-4 py-2 mb-4"
-                        />
+                        <div className="flex gap-3 mb-6">
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={workoutSearch}
+                                    onChange={(e) => {
+                                        setWorkoutSearch(e.target.value);
+                                        setWorkoutPage(1);
+                                    }}
+                                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition"
+                                />
+                            </div>
+                            <select
+                                value={workoutSort}
+                                onChange={(e) => {
+                                    setWorkoutSort(e.target.value);
+                                    setWorkoutPage(1);
+                                }}
+                                className="w-32 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-white"
+                            >
+                                <option value="newest">Newest</option>
+                                <option value="oldest">Oldest</option>
+                                <option value="az">A-Z</option>
+                            </select>
+                        </div>
 
-                        <select
-                            value={workoutSort}
-                            onChange={(e) => {
-                                setWorkoutSort(e.target.value);
-                                setWorkoutPage(1);
-                            }}
-                            className="w-full border rounded-lg px-4 py-2 mb-4"
-                        >
-                            <option value="newest">Sort: Newest</option>
-                            <option value="oldest">Sort: Oldest</option>
-                            <option value="az">Sort: A-Z</option>
-                        </select>
-
-                        <form onSubmit={handleCreateWorkout} className="space-y-3 mb-6">
+                        <form onSubmit={handleCreateWorkout} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 mb-6 space-y-3">
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Create New</h3>
                             <input
                                 type="text"
-                                placeholder="Workout Title"
+                                placeholder="Workout Title (e.g. Leg Day)"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full border rounded-lg px-4 py-2"
+                                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-white"
                             />
 
                             <input
                                 type="text"
-                                placeholder="Notes"
+                                placeholder="Notes (Optional)"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                className="w-full border rounded-lg px-4 py-2"
+                                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-white"
                             />
 
                             <button
                                 disabled={creatingWorkout}
-                                className={`w-full py-2 rounded-lg font-semibold ${creatingWorkout
-                                        ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gray-900 hover:bg-gray-800 text-white"
+                                className={`w-full py-2.5 rounded-xl font-semibold shadow-md transition-all ${creatingWorkout
+                                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                                    : "bg-slate-900 hover:bg-slate-800 text-white hover:shadow-lg hover:-translate-y-0.5"
                                     }`}
                             >
-                                {creatingWorkout ? "Adding..." : "Add Workout"}
+                                {creatingWorkout ? "Creating..." : "Add Workout"}
                             </button>
                         </form>
 
                         {loadingWorkouts ? (
-                            <p className="text-gray-500">Loading workouts...</p>
+                            <div className="flex justify-center py-8">
+                                <svg className="animate-spin h-8 w-8 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
                         ) : paginatedWorkouts.length === 0 ? (
-                            <p className="text-gray-500">No workouts found.</p>
+                            <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-500">
+                                No workouts found.
+                            </div>
                         ) : (
                             <div className="space-y-3">
                                 {paginatedWorkouts.map((workout) => (
                                     <div
                                         key={workout._id}
-                                        className={`p-4 border rounded-xl ${selectedWorkout?._id === workout._id
-                                                ? "border-gray-900 bg-gray-50"
-                                                : "hover:bg-gray-50"
+                                        onClick={() => handleSelectWorkout(workout)}
+                                        className={`p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${selectedWorkout?._id === workout._id
+                                            ? "border-slate-500 bg-slate-50 shadow-md transform scale-[1.01]"
+                                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
                                             }`}
                                     >
-                                        <div className="flex justify-between items-center">
+                                        <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <h3 className="font-bold text-lg">{workout.title}</h3>
-                                                <p className="text-sm text-gray-500">{workout.notes}</p>
+                                                <h3 className={`font-bold text-lg ${selectedWorkout?._id === workout._id ? "text-slate-700" : "text-slate-900"}`}>
+                                                    {workout.title}
+                                                </h3>
+                                                <p className="text-sm text-slate-500 line-clamp-1">{workout.notes || "No notes"}</p>
                                             </div>
 
                                             <button
-                                                onClick={() => askDeleteWorkout(workout._id)}
-                                                className="text-red-500 hover:text-red-700 font-semibold text-sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    askDeleteWorkout(workout._id);
+                                                }}
+                                                className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                                title="Delete Workout"
                                             >
-                                                Delete
+                                                
                                             </button>
                                         </div>
 
-                                        <button
-                                            onClick={() => handleSelectWorkout(workout)}
-                                            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold"
-                                        >
-                                            View Logs
-                                        </button>
+                                        <div className="flex items-center text-xs font-semibold text-slate-600 bg-slate-100/50 px-3 py-1.5 rounded-lg w-max">
+                                            View Details →
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         )}
 
                         {totalWorkoutPages > 1 && (
-                            <div className="flex justify-between items-center mt-4">
+                            <div className="flex justify-between items-center mt-6 pt-6 border-t border-slate-100">
                                 <button
                                     disabled={workoutPage === 1}
                                     onClick={() => setWorkoutPage((p) => p - 1)}
-                                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                    className="px-4 py-2 rounded-xl border border-slate-200 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                                 >
-                                    Prev
+                                    Previous
                                 </button>
-
-                                <p className="text-gray-600 font-semibold">
-                                    Page {workoutPage} of {totalWorkoutPages}
+                                <p className="text-slate-500 font-medium text-sm">
+                                    {workoutPage} / {totalWorkoutPages}
                                 </p>
-
                                 <button
                                     disabled={workoutPage === totalWorkoutPages}
                                     onClick={() => setWorkoutPage((p) => p + 1)}
-                                    className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                    className="px-4 py-2 rounded-xl border border-slate-200 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                                 >
                                     Next
                                 </button>
@@ -518,139 +562,156 @@ export default function Dashboard() {
                     </div>
 
                     {/* Logs */}
-                    <div className="bg-white rounded-2xl shadow-md p-6">
-                        <h2 className="text-xl font-bold mb-4">📊 Exercise Logs</h2>
+                    <div className="lg:col-span-7 bg-white border border-slate-200 shadow-xl rounded-3xl p-6 lg:p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-md">
+                                
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-900">Exercise Details</h2>
+                        </div>
 
                         {!selectedWorkout ? (
-                            <p className="text-gray-500">
-                                Select a workout to view and add logs.
-                            </p>
+                            <div className="h-96 flex flex-col items-center justify-center text-center p-8 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+<h3 className="text-lg font-bold text-slate-800 mb-2">No Workout Selected</h3>
+                                <p className="text-slate-500 max-w-sm">
+                                    Select a workout from the list on the left to view and manage its exercises.
+                                </p>
+                            </div>
                         ) : (
-                            <>
-                                <h3 className="text-lg font-semibold mb-3">
-                                    Workout:{" "}
-                                    <span className="text-blue-600">{selectedWorkout.title}</span>
-                                </h3>
-
-                                <div className="space-y-3 mb-5">
-                                    <input
-                                        type="text"
-                                        placeholder="Search exercise..."
-                                        value={logSearch}
-                                        onChange={(e) => {
-                                            setLogSearch(e.target.value);
-                                            setLogPage(1);
-                                        }}
-                                        className="w-full border rounded-lg px-4 py-2"
-                                    />
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input
-                                            type="number"
-                                            placeholder="Min Weight"
-                                            value={minWeight}
-                                            onChange={(e) => {
-                                                setMinWeight(e.target.value);
-                                                setLogPage(1);
-                                            }}
-                                            className="border rounded-lg px-4 py-2"
-                                        />
-
-                                        <input
-                                            type="number"
-                                            placeholder="Min Reps"
-                                            value={minReps}
-                                            onChange={(e) => {
-                                                setMinReps(e.target.value);
-                                                setLogPage(1);
-                                            }}
-                                            className="border rounded-lg px-4 py-2"
-                                        />
+                            <div className="">
+                                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-6 flex justify-between items-center">
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Current Workout</p>
+                                        <h3 className="text-xl font-bold text-slate-900">{selectedWorkout.title}</h3>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-slate-500 font-bold">
+                                        {logs.length}
                                     </div>
                                 </div>
 
-                                <select
-                                    value={logSort}
-                                    onChange={(e) => {
-                                        setLogSort(e.target.value);
-                                        setLogPage(1);
-                                    }}
-                                    className="w-full border rounded-lg px-4 py-2 mb-4"
-                                >
-                                    <option value="newest">Sort: Newest</option>
-                                    <option value="oldest">Sort: Oldest</option>
-                                    <option value="weightHigh">Sort: Weight High</option>
-                                    <option value="weightLow">Sort: Weight Low</option>
-                                </select>
+                                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                                    <div className="relative flex-1">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Search exercises..."
+                                            value={logSearch}
+                                            onChange={(e) => {
+                                                setLogSearch(e.target.value);
+                                                setLogPage(1);
+                                            }}
+                                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition"
+                                        />
+                                    </div>
 
-                                <form onSubmit={handleCreateLog} className="space-y-3 mb-6">
+                                    <div className="flex gap-3">
+                                        <select
+                                            value={logSort}
+                                            onChange={(e) => {
+                                                setLogSort(e.target.value);
+                                                setLogPage(1);
+                                            }}
+                                            className="border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-white flex-1 sm:w-auto"
+                                        >
+                                            <option value="newest">Newest</option>
+                                            <option value="oldest">Oldest</option>
+                                            <option value="weightHigh">Heaviest</option>
+                                            <option value="weightLow">Lightest</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleCreateLog} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm mb-6 space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Log Exercise</h3>
+
                                     <input
                                         type="text"
-                                        placeholder="Exercise Name"
+                                        placeholder="Exercise Name (e.g. Bench Press)"
                                         value={exerciseName}
                                         onChange={(e) => setExerciseName(e.target.value)}
-                                        className="w-full border rounded-lg px-4 py-2"
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-slate-50"
                                     />
 
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <input
-                                            type="number"
-                                            placeholder="Sets"
-                                            value={sets}
-                                            onChange={(e) => setSets(e.target.value)}
-                                            className="border rounded-lg px-3 py-2"
-                                        />
-                                        <input
-                                            type="number"
-                                            placeholder="Reps"
-                                            value={reps}
-                                            onChange={(e) => setReps(e.target.value)}
-                                            className="border rounded-lg px-3 py-2"
-                                        />
-                                        <input
-                                            type="number"
-                                            placeholder="Weight"
-                                            value={weight}
-                                            onChange={(e) => setWeight(e.target.value)}
-                                            className="border rounded-lg px-3 py-2"
-                                        />
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">Sets</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={sets}
+                                                onChange={(e) => setSets(e.target.value)}
+                                                className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-slate-50 text-center"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">Reps</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={reps}
+                                                onChange={(e) => setReps(e.target.value)}
+                                                className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-slate-50 text-center"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">Weight (kg)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={weight}
+                                                onChange={(e) => setWeight(e.target.value)}
+                                                className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition bg-slate-50 text-center"
+                                            />
+                                        </div>
                                     </div>
 
                                     <button
                                         disabled={creatingLog}
-                                        className={`w-full py-2 rounded-lg font-semibold ${creatingLog
-                                                ? "bg-gray-400 cursor-not-allowed"
-                                                : "bg-blue-600 hover:bg-blue-700 text-white"
-                                            }`}
+                                        className={`w-full py-3 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 text-white transition shadow-md mt-2 ${creatingLog ? "opacity-70 cursor-not-allowed" : ""}`}
                                     >
-                                        {creatingLog ? "Adding..." : "Add Log"}
+                                        {creatingLog ? "Adding..." : "Add to Workout"}
                                     </button>
                                 </form>
 
                                 {loadingLogs ? (
-                                    <p className="text-gray-500">Loading logs...</p>
+                                    <div className="flex justify-center py-8">
+                                        <svg className="animate-spin h-8 w-8 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
                                 ) : paginatedLogs.length === 0 ? (
-                                    <p className="text-gray-500">No logs found.</p>
+                                    <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-500">
+                                        No exercises logged yet.
+                                    </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {paginatedLogs.map((log) => (
                                             <div
                                                 key={log._id}
-                                                className="p-4 border rounded-xl flex justify-between items-center hover:bg-gray-50"
+                                                className="p-5 border border-slate-200 bg-white rounded-2xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:shadow-md transition-shadow group"
                                             >
-                                                <div>
-                                                    <h4 className="font-bold">{log.exerciseName}</h4>
-                                                    <p className="text-sm text-gray-500">
-                                                        {log.sets} sets × {log.reps} reps | Weight:{" "}
-                                                        {log.weight} kg
-                                                    </p>
+                                                <div className="flex items-center gap-4">
+<div>
+                                                        <h4 className="font-bold text-lg text-slate-900">{log.exerciseName}</h4>
+                                                        <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md font-medium text-slate-700">{log.sets} sets</span>
+                                                            <span className="text-slate-300">•</span>
+                                                            <span className="bg-slate-100 px-2.5 py-1 rounded-md font-medium text-slate-700">{log.reps} reps</span>
+                                                            <span className="text-slate-300">•</span>
+                                                            <span className="bg-slate-50 text-slate-700 px-2.5 py-1 rounded-md font-bold">{log.weight} kg</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <button
                                                     onClick={() => askDeleteLog(log._id)}
-                                                    className="text-red-500 hover:text-red-700 font-semibold text-sm"
+                                                    className="self-end sm:self-auto text-slate-400 hover:text-red-500 p-2 rounded-xl hover:bg-red-50 transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"
+                                                    title="Delete Log"
                                                 >
-                                                    Delete
+                                                    
                                                 </button>
                                             </div>
                                         ))}
@@ -658,29 +719,27 @@ export default function Dashboard() {
                                 )}
 
                                 {totalLogPages > 1 && (
-                                    <div className="flex justify-between items-center mt-4">
+                                    <div className="flex justify-between items-center mt-6 pt-6 border-t border-slate-100">
                                         <button
                                             disabled={logPage === 1}
                                             onClick={() => setLogPage((p) => p - 1)}
-                                            className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                            className="px-4 py-2 rounded-xl border border-slate-200 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                                         >
-                                            Prev
+                                            Previous
                                         </button>
-
-                                        <p className="text-gray-600 font-semibold">
-                                            Page {logPage} of {totalLogPages}
+                                        <p className="text-slate-500 font-medium text-sm">
+                                            {logPage} / {totalLogPages}
                                         </p>
-
                                         <button
                                             disabled={logPage === totalLogPages}
                                             onClick={() => setLogPage((p) => p + 1)}
-                                            className="px-4 py-2 rounded-lg border disabled:opacity-50"
+                                            className="px-4 py-2 rounded-xl border border-slate-200 font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
                                         >
                                             Next
                                         </button>
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -689,7 +748,7 @@ export default function Dashboard() {
                 <ConfirmModal
                     isOpen={showWorkoutModal}
                     title="Delete Workout"
-                    message="Are you sure you want to delete this workout? This action cannot be undone."
+                    message="Are you sure you want to delete this workout? All associated exercise logs will also be permanently deleted. This action cannot be undone."
                     onCancel={() => setShowWorkoutModal(false)}
                     onConfirm={confirmDeleteWorkout}
                 />
@@ -697,7 +756,7 @@ export default function Dashboard() {
                 <ConfirmModal
                     isOpen={showLogModal}
                     title="Delete Exercise Log"
-                    message="Are you sure you want to delete this exercise log?"
+                    message="Are you sure you want to delete this exercise? It will be removed from your workout history."
                     onCancel={() => setShowLogModal(false)}
                     onConfirm={confirmDeleteLog}
                 />
