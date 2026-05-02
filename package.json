@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm start --prefix backend",
+    "build": "npm install --prefix backend",
     "dev": "npm run dev --prefix backend"
   }
 }
