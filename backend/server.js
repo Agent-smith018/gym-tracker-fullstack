@@ -8,54 +8,33 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
-// 1. Define allowed origins
-// Use an environment variable for production, fallback to localhost for dev
+// Use an array of allowed origins
 const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    "https://gym-tracker-fullstack-2.onrender.com", // Your specific frontend URL
-    "http://localhost:5173", // Default Vite port
-    "http://localhost:3000"
+    "https://gym-tracker-fullstack-2.onrender.com", // Your Frontend URL
+    "http://localhost:5173"                       // Local Dev
 ];
 
-// 2. Configure Socket.io with specific CORS
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
-        methods: ["GET", "POST"],
-        credentials: true
+        methods: ["GET", "POST"]
     }
 });
 
-// 3. Configure Express CORS
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
-
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Make io accessible in routes
 app.set('io', io);
-
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/workouts', require('./src/routes/workouts'));
 app.use('/api/exercises', require('./src/routes/exercises'));
 
-// WebSocket events
-io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
-    socket.on('disconnect', () => console.log('Client disconnected'));
-});
-
-// 4. Database Connection & Server Start
 const PORT = process.env.PORT || 5001;
-
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
-        // Use PORT variable instead of hardcoding 5001
-        server.listen(PORT, '0.0.0.0', () =>
-            console.log(`Server running on port ${PORT}`)
-        );
+        // IMPORTANT: Listen on 0.0.0.0 for Render
+        server.listen(PORT, '0.0.0.0', () => console.log(`Server on ${PORT}`));
     })
-    .catch(err => console.error('MongoDB connection error:', err));
+    .catch(err => console.error(err));
