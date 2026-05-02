@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
                     setUser(res.data);
                 } catch (err) {
                     console.error("Backend failed on /me:", err.response?.data || err.message);
-                    logout(); // Clear local storage if the backend says the token is junk
+                    logout();
                 }
             }
             setLoading(false);
