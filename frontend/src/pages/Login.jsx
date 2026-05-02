@@ -1,136 +1,161 @@
-import { useState, useContext } from "react";
-import api from "../api/api";
-import { AuthContext } from "../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import API from '../api/axios';
 
-export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    const { login } = useContext(AuthContext);
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
+const Login = () => {
+    const [form, setForm] = useState({ email: '', password: '' });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError("");
-        setIsLoading(true);
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
         try {
-            const res = await api.post("/auth/login", { email, password });
-            login(res.data.token);
-            navigate("/");
+            const res = await API.post('/auth/login', form);
+            login(res.data.token, res.data.user);
+            navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || "Login failed");
+            setError(err.response?.data?.message || 'Login failed');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="auth-bg">
-            <div className="auth-card">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="auth-title">
-                        Gym Tracker
-                    </h1>
-                    <p className="auth-subtitle">
-                        Log in to manage your workouts and track progress.
-                    </p>
-                </div>
+        <div style={styles.container}>
+            <div style={styles.card}>
+                <h2 style={styles.title}>Welcome Back 🏋️</h2>
+                <p style={styles.subtitle}>Login to track your workouts</p>
 
-                {/* Error */}
-                {error && (
-                    <div className="auth-error">
-                        <span className="text-lg">⚠️</span>
-                        {error}
-                    </div>
-                )}
+                {error && <p style={styles.error}>{error}</p>}
 
-                {/* Form */}
-                <form onSubmit={handleLogin} className="space-y-5">
-                    <div>
-                        <label className="auth-label">
-                            Email Address
-                        </label>
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Email</label>
                         <input
+                            style={styles.input}
                             type="email"
-                            placeholder="name@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="auth-input"
+                            name="email"
+                            placeholder="john@example.com"
+                            value={form.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="auth-label">
-                            Password
-                        </label>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Password</label>
                         <input
+                            style={styles.input}
                             type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="auth-input"
+                            name="password"
+                            placeholder="••••••••"
+                            value={form.password}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
                     <button
-                        disabled={isLoading}
-                        className={isLoading ? "auth-btn auth-btn-disabled" : "auth-btn"}
+                        type="submit"
+                        style={styles.btn}
+                        disabled={loading}
                     >
-                        {isLoading ? (
-                            <>
-                                <svg
-                                    className="animate-spin mr-3 h-5 w-5 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                Signing in...
-                            </>
-                        ) : (
-                            "Sign In"
-                        )}
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
 
-                {/* Footer */}
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                    <p className="text-slate-600">
-                        Don&apos;t have an account?{" "}
-                        <Link
-                            to="/signup"
-                            className="text-slate-900 font-bold hover:underline"
-                        >
-                            Create Account
-                        </Link>
-                    </p>
-                </div>
-
-                <p className="text-center text-xs text-slate-400 mt-6">
-                    © {new Date().getFullYear()} Gym Tracker. All rights reserved.
+                <p style={styles.footer}>
+                    Don't have an account?{' '}
+                    <Link to="/signup" style={styles.link}>Sign Up</Link>
                 </p>
             </div>
         </div>
     );
-}
+};
+
+const styles = {
+    container: {
+        minHeight: '100vh',
+        backgroundColor: '#0f0f1a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    card: {
+        backgroundColor: '#1a1a2e',
+        padding: '40px',
+        borderRadius: '12px',
+        width: '100%',
+        maxWidth: '420px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+    },
+    title: {
+        color: 'white',
+        marginBottom: '6px',
+        fontSize: '1.8rem',
+    },
+    subtitle: {
+        color: '#a8a8b3',
+        marginBottom: '28px',
+        fontSize: '0.95rem',
+    },
+    field: {
+        marginBottom: '18px',
+    },
+    label: {
+        display: 'block',
+        color: '#a8a8b3',
+        marginBottom: '6px',
+        fontSize: '0.9rem',
+    },
+    input: {
+        width: '100%',
+        padding: '10px 14px',
+        borderRadius: '8px',
+        border: '1px solid #2d2d44',
+        backgroundColor: '#0f0f1a',
+        color: 'white',
+        fontSize: '0.95rem',
+        boxSizing: 'border-box',
+    },
+    btn: {
+        width: '100%',
+        padding: '12px',
+        backgroundColor: '#e94560',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '1rem',
+        cursor: 'pointer',
+        marginTop: '8px',
+    },
+    error: {
+        backgroundColor: '#ff000022',
+        color: '#ff6b6b',
+        padding: '10px',
+        borderRadius: '6px',
+        marginBottom: '16px',
+        fontSize: '0.9rem',
+    },
+    footer: {
+        color: '#a8a8b3',
+        textAlign: 'center',
+        marginTop: '20px',
+        fontSize: '0.9rem',
+    },
+    link: {
+        color: '#e94560',
+        textDecoration: 'none',
+    },
+};
+
+export default Login;

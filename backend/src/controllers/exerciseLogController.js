@@ -13,7 +13,7 @@ const createExerciseLog = async (req, res) => {
         // check workout belongs to user
         const existingWorkout = await Workout.findOne({
             _id: workout,
-            user: req.userId,
+            user: req.user.id,
         });
 
         if (!existingWorkout) {
@@ -21,7 +21,7 @@ const createExerciseLog = async (req, res) => {
         }
 
         const log = await ExerciseLog.create({
-            user: req.userId,
+            user: req.user.id,
             workout,
             exerciseName,
             sets,
@@ -43,7 +43,7 @@ const createExerciseLog = async (req, res) => {
 // GET all logs for user
 const getExerciseLogs = async (req, res) => {
     try {
-        const logs = await ExerciseLog.find({ user: req.userId })
+        const logs = await ExerciseLog.find({ user: req.user.id })
             .populate("workout", "title date")
             .sort({ createdAt: -1 });
 
@@ -59,7 +59,7 @@ const getLogsByWorkout = async (req, res) => {
         const workoutId = req.params.workoutId;
 
         const logs = await ExerciseLog.find({
-            user: req.userId,
+            user: req.user.id,
             workout: workoutId,
         }).sort({ createdAt: -1 });
 
@@ -73,7 +73,7 @@ const getLogsByWorkout = async (req, res) => {
 const updateExerciseLog = async (req, res) => {
     try {
         const log = await ExerciseLog.findOneAndUpdate(
-            { _id: req.params.id, user: req.userId },
+            { _id: req.params.id, user: req.user.id },
             req.body,
             { new: true }
         );
@@ -93,7 +93,7 @@ const deleteExerciseLog = async (req, res) => {
     try {
         const log = await ExerciseLog.findOneAndDelete({
             _id: req.params.id,
-            user: req.userId,
+            user: req.user.id,
         });
 
         if (!log) {

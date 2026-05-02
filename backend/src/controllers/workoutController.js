@@ -10,7 +10,7 @@ const createWorkout = async (req, res) => {
         }
 
         const workout = await Workout.create({
-            user: req.userId,
+            user: req.user.id,
             title,
             date,
             notes,
@@ -29,7 +29,7 @@ const createWorkout = async (req, res) => {
 // GET all workouts (only logged in user)
 const getWorkouts = async (req, res) => {
     try {
-        const workouts = await Workout.find({ user: req.userId }).sort({ date: -1 });
+        const workouts = await Workout.find({ user: req.user.id }).sort({ date: -1 });
         res.json(workouts);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -41,7 +41,7 @@ const getWorkoutById = async (req, res) => {
     try {
         const workout = await Workout.findOne({
             _id: req.params.id,
-            user: req.userId,
+            user: req.user.id,
         });
 
         if (!workout) {
@@ -58,7 +58,7 @@ const getWorkoutById = async (req, res) => {
 const updateWorkout = async (req, res) => {
     try {
         const workout = await Workout.findOneAndUpdate(
-            { _id: req.params.id, user: req.userId },
+            { _id: req.params.id, user: req.user.id },
             req.body,
             { new: true }
         );
@@ -78,7 +78,7 @@ const deleteWorkout = async (req, res) => {
     try {
         const workout = await Workout.findOneAndDelete({
             _id: req.params.id,
-            user: req.userId,
+            user: req.user.id,
         });
 
         if (!workout) {

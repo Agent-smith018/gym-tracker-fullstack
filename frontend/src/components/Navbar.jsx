@@ -1,25 +1,82 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { FaDumbbell } from 'react-icons/fa';
 
-export default function Navbar({ onLogout }) {
+const Navbar = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
-        <nav className="sticky top-0 z-40 w-full bg-white border border-slate-200 shadow-xl border-b border-slate-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-20">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">
-                            GymTracker<span className="text-slate-600">Pro</span>
-                        </h1>
-                    </div>
+        <nav style={styles.nav}>
+            <Link to="/dashboard" style={styles.brand}>
+                <FaDumbbell style={{ marginRight: 8 }} />
+                GymTracker
+            </Link>
 
-                    <button
-                        onClick={onLogout}
-                        className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm hover:shadow hover:-translate-y-0.5"
-                    >
-                        <span>Sign Out</span>
-                        
-                    </button>
-                </div>
+            <div style={styles.right}>
+                {user ? (
+                    <>
+                        <span style={styles.username}>Hey, {user.username} 👋</span>
+                        <button onClick={handleLogout} style={styles.btn}>
+                            Logout
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login" style={styles.link}>Login</Link>
+                        <Link to="/signup" style={styles.link}>Signup</Link>
+                    </>
+                )}
             </div>
         </nav>
     );
-}
+};
+
+const styles = {
+    nav: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '14px 32px',
+        backgroundColor: '#1a1a2e',
+        color: 'white',
+    },
+    brand: {
+        color: '#e94560',
+        fontSize: '1.4rem',
+        fontWeight: 'bold',
+        textDecoration: 'none',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    right: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+    },
+    username: {
+        color: '#a8a8b3',
+        fontSize: '0.95rem',
+    },
+    link: {
+        color: 'white',
+        textDecoration: 'none',
+        fontSize: '0.95rem',
+    },
+    btn: {
+        backgroundColor: '#e94560',
+        color: 'white',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '0.9rem',
+    },
+};
+
+export default Navbar;

@@ -29,9 +29,16 @@ const signupUser = async (req, res) => {
       password: hashedPassword,
     });
 
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.status(201).json({
       message: "User registered successfully",
-      userId: user._id,
+      token,
+      user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -79,11 +86,16 @@ const loginUser = async (req, res) => {
 // Get current logged-in user
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    // Change req.userId to req.user.id
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

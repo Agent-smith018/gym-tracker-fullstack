@@ -14,7 +14,7 @@ const exerciseLogSchema = new mongoose.Schema(
             required: true,
         },
 
-        exerciseName: {
+        name: {
             type: String,
             required: true,
             trim: true,
@@ -45,4 +45,4 @@ const exerciseLogSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("ExerciseLog", exerciseLogSchema);
+module.exports = mongoose.model("Exercise", exerciseLogSchema);

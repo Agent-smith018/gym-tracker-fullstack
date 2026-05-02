@@ -1,155 +1,174 @@
-import { useState } from "react";
-import api from "../api/api";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import API from '../api/axios';
 
-export default function Signup() {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
+const Signup = () => {
+    const [form, setForm] = useState({ name: '', email: '', password: '' });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSignup = async (e) => {
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
-        setSuccess("");
-        setIsLoading(true);
-
+        setError('');
+        setLoading(true);
         try {
-            const res = await api.post("/auth/signup", { name, email, password });
-            setSuccess(res.data.message);
-
-            setTimeout(() => {
-                navigate("/login");
-            }, 1200);
+            const res = await API.post('/auth/signup', form);
+            login(res.data.token, res.data.user);
+            navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || "Signup failed");
+            setError(err.response?.data?.message || 'Signup failed');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="auth-bg">
-            <div className="auth-card">
-                <div className="text-center mb-10">
-                    <h1 className="auth-title">
-                        Join Gym Tracker
-                    </h1>
-                    <p className="auth-subtitle">
-                        Create an account to start tracking your progress.
-                    </p>
-                </div>
+        <div style={styles.container}>
+            <div style={styles.card}>
+                <h2 style={styles.title}>Create Account 💪</h2>
+                <p style={styles.subtitle}>Start tracking your gains today</p>
 
-                {error && (
-                    <div className="auth-error">
-                        <span className="text-lg">⚠️</span>
-                        {error}
-                    </div>
-                )}
+                {error && <p style={styles.error}>{error}</p>}
 
-                {success && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm mb-6 flex items-center gap-2">
-                        <span className="text-lg">✅</span>
-                        {success} Redirecting...
-                    </div>
-                )}
-
-                <form onSubmit={handleSignup} className="space-y-5">
-                    <div>
-                        <label className="auth-label">
-                            Full Name
-                        </label>
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Username</label>
                         <input
+                            style={styles.input}
                             type="text"
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="auth-input"
+                            name="name"
+                            placeholder="johndoe"
+                            value={form.name}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="auth-label">
-                            Email Address
-                        </label>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Email</label>
                         <input
+                            style={styles.input}
                             type="email"
-                            placeholder="name@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="auth-input"
+                            name="email"
+                            placeholder="john@example.com"
+                            value={form.email}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="auth-label">
-                            Password
-                        </label>
+                    <div style={styles.field}>
+                        <label style={styles.label}>Password</label>
                         <input
+                            style={styles.input}
                             type="password"
-                            placeholder="Create a strong password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="auth-input"
+                            name="password"
+                            placeholder="••••••••"
+                            value={form.password}
+                            onChange={handleChange}
                             required
                         />
                     </div>
 
                     <button
-                        disabled={isLoading || success}
-                        className={(isLoading || success) ? "auth-btn auth-btn-disabled mt-6" : "auth-btn mt-6"}
+                        type="submit"
+                        style={styles.btn}
+                        disabled={loading}
                     >
-                        {isLoading ? (
-                            <>
-                                <svg
-                                    className="animate-spin mr-3 h-5 w-5 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                Signing up...
-                            </>
-                        ) : (
-                            "Sign Up"
-                        )}
+                        {loading ? 'Creating account...' : 'Sign Up'}
                     </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                    <p className="text-slate-600">
-                        Already have an account?{" "}
-                        <Link to="/login" className="text-slate-900 font-bold hover:underline">
-                            Sign In
-                        </Link>
-                    </p>
-                </div>
-
-                {/* Footer */}
-                <p className="text-center text-xs text-slate-400 mt-8">
-                    © {new Date().getFullYear()} Gym Tracker. All rights reserved.
+                <p style={styles.footer}>
+                    Already have an account?{' '}
+                    <Link to="/login" style={styles.link}>Login</Link>
                 </p>
             </div>
         </div>
     );
-}
+};
+
+const styles = {
+    container: {
+        minHeight: '100vh',
+        backgroundColor: '#0f0f1a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    card: {
+        backgroundColor: '#1a1a2e',
+        padding: '40px',
+        borderRadius: '12px',
+        width: '100%',
+        maxWidth: '420px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+    },
+    title: {
+        color: 'white',
+        marginBottom: '6px',
+        fontSize: '1.8rem',
+    },
+    subtitle: {
+        color: '#a8a8b3',
+        marginBottom: '28px',
+        fontSize: '0.95rem',
+    },
+    field: {
+        marginBottom: '18px',
+    },
+    label: {
+        display: 'block',
+        color: '#a8a8b3',
+        marginBottom: '6px',
+        fontSize: '0.9rem',
+    },
+    input: {
+        width: '100%',
+        padding: '10px 14px',
+        borderRadius: '8px',
+        border: '1px solid #2d2d44',
+        backgroundColor: '#0f0f1a',
+        color: 'white',
+        fontSize: '0.95rem',
+        boxSizing: 'border-box',
+    },
+    btn: {
+        width: '100%',
+        padding: '12px',
+        backgroundColor: '#e94560',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '1rem',
+        cursor: 'pointer',
+        marginTop: '8px',
+    },
+    error: {
+        backgroundColor: '#ff000022',
+        color: '#ff6b6b',
+        padding: '10px',
+        borderRadius: '6px',
+        marginBottom: '16px',
+        fontSize: '0.9rem',
+    },
+    footer: {
+        color: '#a8a8b3',
+        textAlign: 'center',
+        marginTop: '20px',
+        fontSize: '0.9rem',
+    },
+    link: {
+        color: '#e94560',
+        textDecoration: 'none',
+    },
+};
+
+export default Signup;
