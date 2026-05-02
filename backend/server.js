@@ -10,18 +10,22 @@ const server = http.createServer(app);
 
 // Use an array of allowed origins
 const allowedOrigins = [
-    "https://gym-tracker-fullstack-2.onrender.com", // Your Frontend URL
+    "https://gym-tracker-fullstack3.onrender.com", // Your Frontend URL
     "http://localhost:5173"                       // Local Dev
 ];
 
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     }
 });
 
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({ 
+    origin: allowedOrigins,
+    credentials: true 
+}));
 app.use(express.json());
 
 // Make io accessible in routes
