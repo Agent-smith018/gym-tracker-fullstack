@@ -21,7 +21,7 @@ const Navbar = () => {
             <div style={styles.right}>
                 {user ? (
                     <>
-                        <span style={styles.username}>Hey, {user.username} 👋</span>
+                        <span style={styles.username}>Hey, {user.name} 👋</span>
                         <button onClick={handleLogout} style={styles.btn}>
                             Logout
                         </button>
