@@ -2,6 +2,7 @@
 
 A fullstack Gym Tracker web application built using **React (Vite)** for the frontend and **Node.js + Express + MongoDB** for the backend.  
 This project allows users to register/login, create workouts, add exercise logs, and receive **real-time updates** using **Socket.io**.
+It features a modern, premium user interface designed with **Tailwind CSS**, utilizing glassmorphism, micro-animations, and dynamic visual components.
 
 ---
 
@@ -22,6 +23,12 @@ Backend API (Render):
 - User Login
 - JWT Token authentication
 - Protected API routes
+
+### ✅ UI & User Experience
+- **Modern Design:** High-end aesthetic using Tailwind CSS
+- **Interactive Dashboard:** Visual analytics with Recharts
+- **Calendar Integration:** Track workout dates with React Calendar
+- **Responsive:** Fully responsive layouts for desktop and mobile devices
 
 ### ✅ Workouts Management (CRUD)
 - Create Workout
@@ -44,6 +51,7 @@ Backend API (Render):
 - Backend deployed on **Render Web Service**
 - Frontend deployed on **Render Static Site**
 - MongoDB hosted on **MongoDB Atlas**
+- Root-level scripts configured for smooth Render deployment
 
 ---
 
@@ -51,9 +59,13 @@ Backend API (Render):
 
 ### Frontend
 - React (Vite)
+- Tailwind CSS (v4)
 - React Router DOM
 - Axios
 - Socket.io Client
+- Recharts (Data Visualization)
+- React Calendar
+- React Icons
 
 ### Backend
 - Node.js
@@ -90,14 +102,15 @@ gym-tracker-fullstack/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
+│   │   ├── components/
 │   │   ├── context/
 │   │   ├── pages/
-│   │   ├── components/
 │   │   └── App.jsx
 │   │
 │   ├── package.json
 │   └── .env.example
 │
+├── package.json (Root deployment config)
 └── README.md
 ```
 
